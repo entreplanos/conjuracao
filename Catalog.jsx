@@ -175,10 +175,17 @@ export default function Catalog({ navigate }) {
   const [dateInput, setDateInput] = useState("");
   const [otherReservations, setOtherReservations] = useState({});
   const [saving, setSaving] = useState(false);
+  const [loadError, setLoadError] = useState(null);
 
   // bootstrap: load catalog + resume or create a lista
   useEffect(() => {
-    (async () => {
+    bootstrap();
+  }, []);
+
+  async function bootstrap() {
+    setLoading(true);
+    setLoadError(null);
+    try {
       const items = await listCatalogItems();
       setAllItems(items);
 
@@ -205,9 +212,13 @@ export default function Catalog({ navigate }) {
         localStorage.setItem("conjuracao_lista_code", code);
       }
       setListCode(code);
+    } catch (err) {
+      console.error("Erro ao abrir o catálogo:", err);
+      setLoadError(err.message || String(err));
+    } finally {
       setLoading(false);
-    })();
-  }, []);
+    }
+  }
 
   function availableFor(itemId) {
     const item = allItems.find((i) => i.id === itemId);
@@ -282,6 +293,21 @@ export default function Catalog({ navigate }) {
     return (
       <div style={{ minHeight: "100vh", background: PALETTE.bg, display: "flex", alignItems: "center", justifyContent: "center", color: PALETTE.muted, fontFamily: "Spectral, serif" }}>
         Abrindo o catálogo...
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div style={{ minHeight: "100vh", background: PALETTE.bg, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: PALETTE.parchment, fontFamily: "Spectral, serif", padding: 24, textAlign: "center" }}>
+        <div style={{ fontFamily: "Cinzel, serif", fontSize: 18, color: "#e2897f", marginBottom: 10 }}>O portal não abriu</div>
+        <div style={{ color: PALETTE.muted, fontSize: 13, maxWidth: 460, marginBottom: 18 }}>{loadError}</div>
+        <button
+          onClick={bootstrap}
+          style={{ fontFamily: "Cinzel, serif", fontSize: 12, letterSpacing: 0.5, textTransform: "uppercase", color: "#1a1208", background: `linear-gradient(135deg, ${PALETTE.gold}, ${PALETTE.ember})`, border: "none", borderRadius: 2, padding: "10px 20px", cursor: "pointer" }}
+        >
+          Tentar de novo
+        </button>
       </div>
     );
   }
