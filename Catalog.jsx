@@ -231,7 +231,7 @@ export default function Catalog({ navigate }) {
   const allTags = useMemo(() => [...new Set(categoryItems.flatMap((i) => i.tags || []))], [category, allItems]);
 
   const filtered = categoryItems.filter((i) => {
-    const matchesSearch = i.name.toLowerCase().includes(search.toLowerCase());
+    const matchesSearch = (i.name || "").toLowerCase().includes(search.toLowerCase());
     const matchesTags = activeTags.length === 0 || activeTags.every((t) => (i.tags || []).includes(t));
     return matchesSearch && matchesTags;
   });

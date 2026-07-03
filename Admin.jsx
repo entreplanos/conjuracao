@@ -91,6 +91,7 @@ export default function Admin({ navigate }) {
   const [search, setSearch] = useState("");
   const [filterCategory, setFilterCategory] = useState("todas");
   const [uploading, setUploading] = useState(false);
+  const [loadError, setLoadError] = useState(null);
   const fileInputRef = useRef(null);
   const isEditing = form.id !== null;
 
@@ -102,17 +103,26 @@ export default function Admin({ navigate }) {
 
   useEffect(() => {
     if (!user) return;
-    (async () => {
-      setLoadingItems(true);
+    loadItems();
+  }, [user]);
+
+  async function loadItems() {
+    setLoadingItems(true);
+    setLoadError(null);
+    try {
       const rows = await listCatalogItems();
       setItems(rows);
+    } catch (err) {
+      console.error("Erro ao carregar o catálogo:", err);
+      setLoadError(err.message || String(err));
+    } finally {
       setLoadingItems(false);
-    })();
-  }, [user]);
+    }
+  }
 
   const filtered = useMemo(() => {
     return items.filter((i) => {
-      const matchesSearch = i.name.toLowerCase().includes(search.toLowerCase()) || (i.tags || []).some((t) => t.toLowerCase().includes(search.toLowerCase()));
+      const matchesSearch = (i.name || "").toLowerCase().includes(search.toLowerCase()) || (i.tags || []).some((t) => t.toLowerCase().includes(search.toLowerCase()));
       const matchesCategory = filterCategory === "todas" || i.category === filterCategory;
       return matchesSearch && matchesCategory;
     });
@@ -361,6 +371,13 @@ export default function Admin({ navigate }) {
 
         {loadingItems ? (
           <div style={{ textAlign: "center", padding: "40px 0", color: PALETTE.muted, fontFamily: "Spectral, serif", fontSize: 13 }}>Carregando catálogo...</div>
+        ) : loadError ? (
+          <div style={{ textAlign: "center", padding: "40px 0" }}>
+            <div style={{ color: "#e2897f", fontFamily: "Spectral, serif", fontSize: 13, marginBottom: 12 }}>{loadError}</div>
+            <button onClick={loadItems} style={{ fontFamily: "Cinzel, serif", fontSize: 12, letterSpacing: 0.5, textTransform: "uppercase", color: PALETTE.gold, background: "transparent", border: `1px solid ${PALETTE.gold}`, borderRadius: 2, padding: "8px 16px", cursor: "pointer" }}>
+              Tentar de novo
+            </button>
+          </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {filtered.map((item) => (
