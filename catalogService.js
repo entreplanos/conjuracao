@@ -48,7 +48,7 @@ export async function getListaMeta(code) {
 
 export async function getListaItens(code) {
   const v = await getItem(`cat:lista:itens:${code}`);
-  return v || [];
+  return Array.isArray(v) ? v : [];
 }
 
 export async function saveListaItens(code, itens) {

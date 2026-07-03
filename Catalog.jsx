@@ -196,7 +196,7 @@ export default function Catalog({ navigate }) {
           setMeta(existingMeta);
           const itens = await getListaItens(code);
           const asMap = {};
-          itens.forEach((i) => (asMap[i.itemId] = i.quantidade));
+          (Array.isArray(itens) ? itens : []).forEach((i) => (asMap[i.itemId] = i.quantidade));
           setList(asMap);
           if (existingMeta.mesaDate) {
             const res = await getReservasDaData(existingMeta.mesaDate, code);
